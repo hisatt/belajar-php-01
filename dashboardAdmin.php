@@ -6,7 +6,7 @@ if (!isset($_SESSION['role'])) {
 }
 
 // fetch data dari db sesuai session yang tersedia
-$query = "SELECT * FROM admin WHERE role ='$_SESSION[role]'";
+$query = "SELECT * FROM admin WHERE id_admin ='$_SESSION[role]'";
 $result = mysqli_query($conn, $query);
 $fetch = mysqli_fetch_array($result);
 ?>
