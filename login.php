@@ -3,48 +3,48 @@ include("koneksi.php");
 session_start();
 
 $error = '';
-
-// cek login / belum..... jika sudah login maka langsung ke
-// if (isset($_SESSION['idrole']) === "admin") {
-//     header('Location: dashboardAdmin.php');
-// }
-// if (isset($_SESSION['idrole']) === "customer") {
-//     header('Location: dashboardCustomers.php');
-// }
+// Cek session loggedIn, jika terdapat session 'loggedIn' maka return true dan menjalankan if didalamnya
 if (isset($_SESSION['loggedIn'])) {
-    if (preg_match("/admin/", $_SESSION['role'])) {
+    // Cek apakah session role yang berisikan id_admin dan id_customer
+    // jika pada id terdapat huruf A artinya login admin
+    if (preg_match("/A/", $_SESSION['role'])) {
         header('Location: dashboardAdmin.php');
     }
-    if (preg_match("/customer/", $_SESSION['role'])) {
+    // jika pada id terdapat huruf C artinya login customer
+    if (preg_match("/C/", $_SESSION['role'])) {
         header('Location: dashboardCustomers.php');
     }
 }
 
 if (isset($_POST['submit'])) {
-    $email = stripslashes($_POST['email']);
+    $email = $_POST['email'];
     $email = mysqli_real_escape_string($conn, $email);
 
-    $password = stripslashes($_POST['password']);
+    $password = $_POST['password'];
     $password = mysqli_real_escape_string($conn, $password);
 
+    // trim untuk menghapus spasi / whitespace string
     if (!empty(trim($email)) && !empty(trim($password))) {
 
         // cek apakah data inputan form login tersedia di tabel admin
         $queryAdmin = "SELECT * FROM admin WHERE email ='$email' AND password ='$password'";
         $resultAdmin = mysqli_query($conn, $queryAdmin);
         $rowsAdmin = mysqli_num_rows($resultAdmin);
+        // mysqli_query = fungsi php untuk menjalankan instruksi atau argumen ke mysql
+        // mysqli_num_rows = digunakan untuk mengetahui berapa banyak jumlah baris
 
-        // cek apakah data inputan form login tersedia di tabel admin
+        // cek apakah data inputan form login tersedia di tabel customer
         $queryCustomers = "SELECT * FROM customer WHERE email ='$email' AND password ='$password'";
         $resultCustomers = mysqli_query($conn, $queryCustomers);
         $rowsCustomers = mysqli_num_rows($resultCustomers);
 
-        // cek
+        // cek result jumlah baris dari variabel $rowsAdmin
         if ($rowsAdmin != 0) {
             while ($row = mysqli_fetch_assoc($resultAdmin)) {
+                // mysqli_fetch_assoc = digunakan untuk mengambil baris hasil sebagai array asosiatif
                 $dbEmail = $row['email'];
                 $dbPassword = $row['password'];
-                $role = $row['role'];
+                $role = $row['id_admin'];
             }
             if ($email == $dbEmail && $password == $dbPassword) {
                 session_start();
@@ -56,7 +56,7 @@ if (isset($_POST['submit'])) {
             while ($row = mysqli_fetch_assoc($resultCustomers)) {
                 $dbEmail = $row['email'];
                 $dbPassword = $row['password'];
-                $role = $row['role'];
+                $role = $row['id_customer'];
             }
             if ($email == $dbEmail && $password == $dbPassword) {
                 session_start();
@@ -64,7 +64,7 @@ if (isset($_POST['submit'])) {
                 $_SESSION['loggedIn'] = true;
                 header('Location: dashboardCustomers.php');
             }
-        }else {
+        } else {
             $error = "Data tidak ditemukan, gagal login!";
         }
     } else {
@@ -96,6 +96,3 @@ if (isset($_POST['submit'])) {
 </body>
 
 </html>
-
-
-<!-- AFKK SEK LURDDDDD, DILUTZZZ, WES ISO NAMPILKE SEKO DATABASE TINGGAL CSS E -->

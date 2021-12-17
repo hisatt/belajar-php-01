@@ -4,54 +4,82 @@ session_start();
 $error = '';
 
 if (isset($_POST['submit'])) {
-    $email = stripslashes($_POST['email']);
+    $email = $_POST['email'];
     $email = mysqli_real_escape_string($conn, $email);
+    // mysqli_real_escape_string = salah satu kegunaan function php yang dapat mencegah sql injection sehingga dapat menghambat serangan penyusup atau intruder
 
-    $password = stripslashes($_POST['password']);
+    $password = $_POST['password'];
     $password = mysqli_real_escape_string($conn, $password);
 
-    $nama_lengkap = stripslashes($_POST['nama_lengkap']);
+    $nama_lengkap = $_POST['nama_lengkap'];
     $nama_lengkap = mysqli_real_escape_string($conn, $nama_lengkap);
 
-    $alamat = stripslashes($_POST['alamat']);
+    $alamat = $_POST['alamat'];
     $alamat = mysqli_real_escape_string($conn, $alamat);
 
     $telepon = $_POST['telepon'];
 
-    $date = $_POST['date'];
+    $new_date = date('Y-m-d', strtotime($_POST['date']));
 
     $jenis_kelamin = $_POST['jenis_kelamin'];
 
     $dummy_saldo = $_POST['dummy_saldo'];
 
 
-
-    if(!empty(trim($email)) && !empty(trim($password)) && !empty(trim($nama_lengkap)) && !empty(trim($alamat)) && !empty(trim($telepon)) && !empty(trim($date)) && !empty(trim($jenis_kelamin)) && !empty(trim($dummy_saldo))) {
+    // validasi form tidak boleh kosong
+    if (!empty(trim($email)) && !empty(trim($password)) && !empty(trim($nama_lengkap)) && !empty(trim($alamat)) && !empty(trim($telepon)) && !empty(trim($new_date)) && !empty(trim($jenis_kelamin)) && !empty(trim($dummy_saldo))) {
+        // validasi email dengan memanggil function cek_email
         if (cek_email($email, $conn) === 0) {
-            if (cek_idCustomer($conn) === 0) {
-                
-            $query = "INSERT INTO customers (id_customer, email, password, nama_customer, alamat, telepon, tanggal, gender, saldo) VALUES ('$id_customer', '$email', '$password', '$nama_lengkap', '$alamat', '$telepon' '$date' '$jenis_kelamin' '$dummy_saldo')";
+            $idKeyuser = cek_idCustomer($conn);
+            // $idKeyuser berisikan string hasil dari generate function cek_idCustomer ketika registrasi berhasil, setiap kode yg digenerate diawali dengan huruf Cxxxx yang menandakan role customer.
+
+            $query = "INSERT INTO customer (id_customer, email, password, nama_customer, alamat, telepon, tanggal, gender, saldo) VALUES ('$idKeyuser', '$email', '$password', '$nama_lengkap', '$alamat', '$telepon', '$new_date', '$jenis_kelamin', '$dummy_saldo')";
             $result = mysqli_query($conn, $query);
+
+            if ($result) {
+                // jika $result true / insert data ke database berhasil maka otomatis akan ke index.php
+                header('Location: index.php');
+            } else {
+                $error = "Regis gagal";
             }
-        } 
+        } else {
+            $error = "email sudah digunakan";
+        }
+    } else {
+        $error = "form tidak boleh kosong";
     }
 }
 
-function cek_email($email, $conn) {
+function cek_email($email, $conn)
+{
     $email = mysqli_real_escape_string($conn, $email);
     $query = "SELECT * FROM customer WHERE email = '$email'";
-    if($result = mysqli_query($conn, $query))return mysqli_num_rows($result);
+    if ($result = mysqli_query($conn, $query)) return mysqli_num_rows($result);
+    // return berapa banyak jumlah baris yang ditemukan.
 }
 
-function cek_idCustomer($conn) {
+function cek_idCustomer($conn)
+{
     $key = 'C' . substr(uniqid(rand(), true), 4, 4);
+    // substr = fungsi yang digunakan untuk memotong bagian dari string. Mempunyai 3 parameter.
+    // Parameter 1 subster yaitu uniqid = Fungsi digunakan untuk menghasilkan ID unik berdasarkan waktu mikro. Parameter pertama yaitu rand() untuk mengenerate integer acak, paramter kedua yaitu true untuk agar nilainya 23 karakter.
+    // Parameter 2 subster yaitu 4 artinya posisi awal untuk ekstraksi dari angka yang digenerate.
+    // Parameter 3 subster yaitu 4 artinya jumlah karakter untuk dapat melakukan ekstraksi.
+
     $key = mysqli_real_escape_string($conn, $key);
     $query = "SELECT * FROM customer WHERE id_customer = '$key'";
-    if($result = mysqli_query($conn, $query))return mysqli_num_rows($result);
+    $result = mysqli_query($conn, $query);
+    $rows = mysqli_num_rows($result);
     
+    // validasi jika key / angka hasil generate tidak ditemukan di database maka akan return key tersebut.
+    if ($rows === 0) {
+        // key  tidak ditemukan di database
+        return $key;
+    } else {
+        // jika key / angka hasil generate ditemukan di database maka akan return menjalankan fungsinya sendiri
+        return cek_idCustomer($conn);
+    }
 }
-// $unique = substr(uniqid(rand(), true), 4, 4);
-// <?php echo $unique = 'C' . substr(uniqid(rand(), true), 4, 4);
 
 ?>
 
@@ -76,7 +104,7 @@ function cek_idCustomer($conn) {
         <input type="text" name="nama_lengkap" placeholder="nama lengkap">
         <input type="text" name="alamat" placeholder="alamat lengkap">
         <input type="number" name="telepon" placeholder="nomer telepon" maxlength="13">
-        <input type="date" name="date">
+        <input type="date" name="date" value="<?php echo date('Y-m-d'); ?>">
         <input type="radio" id="l" name="jenis_kelamin" value="L">
         <label for="l">L</label>
         <input type="radio" id="p" name="jenis_kelamin" value="P">
@@ -85,7 +113,7 @@ function cek_idCustomer($conn) {
         <button type="submit" name="submit">Register</button>
     </form>
 
-    <?php echo $cekcek; ?>
+    <?php echo cek_idCustomer($conn)?>
 </body>
 
 </html>
