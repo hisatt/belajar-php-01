@@ -57,7 +57,7 @@ $totalPrevMonth = $rowPrevMonth['total'];
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link link-dark">
+                    <a href="tabelTransaksi.php" class="nav-link link-dark">
                         Transaksi
                     </a>
                 </li>
@@ -77,7 +77,7 @@ $totalPrevMonth = $rowPrevMonth['total'];
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link link-dark">
+                    <a href="tabelCustomer.php" class="nav-link link-dark">
                         Tabel Customers
                     </a>
                 </li>
